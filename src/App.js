@@ -90,7 +90,7 @@ function App() {
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [touchedIds]);
+  }, [answerIds, correct, correctWords, spanoGramAnswerIds, touchedLetters]);
 
   return (
     <>
