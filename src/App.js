@@ -16,7 +16,7 @@ function App() {
 
   useEffect(() => {
     const handleTouchStart = (event) => {
-      if (!event.target.closest(".word-list")) {
+      if (event.target.closest(".grid-container") || event.target.closest(".message") || event.target.closest(".letters") || event.target.closest(".progress")) {
         event.preventDefault();
       }
       if(answerIds.length + spanoGramAnswerIds.length === 48 ) {
