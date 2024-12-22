@@ -16,7 +16,9 @@ function App() {
 
   useEffect(() => {
     const handleTouchStart = (event) => {
-      event.preventDefault();
+      if (!event.target.closest(".word-list")) {
+        event.preventDefault();
+      }
       if(answerIds.length + spanoGramAnswerIds.length === 48 ) {
         return;
       }
@@ -122,6 +124,15 @@ function App() {
       ))}
     </div>
     <p className='progress'> {correct} of 6 words found.</p>
+    {correct === 6 ? (
+      <div className='word-list'>
+        <p className='clue'>Clues:</p>
+        {correctWords.map((word, index) => {
+          return(<p className='word' key={index}>{word}</p>)
+        })}
+        <p className='word'>{spanoGram}</p>
+      </div>
+    ): null}
     </>
   );
 }
