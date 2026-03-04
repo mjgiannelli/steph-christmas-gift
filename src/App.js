@@ -1,5 +1,6 @@
 import './App.css';
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import confetti from 'canvas-confetti';
 
 function getLineSegments(ids, gridEl, color) {
   if (!gridEl || ids.length < 2) return [];
@@ -43,6 +44,8 @@ function App() {
   const [spanoGramPath, setSpanoGramPath] = useState([]);
   const [lineSegments, setLineSegments] = useState([]);
   const [layoutVersion, setLayoutVersion] = useState(0);
+  const [electrifiedIds, setElectrifiedIds] = useState([]);
+  const [electrifiedGoldIds, setElectrifiedGoldIds] = useState([]);
   const gridRef = useRef(null);
 
   const letters = ['E', 'N', 'I', 'S', 'U', 'B', 'S', 'S', 'H', 'N', 'G', 'S', 'C', 'T', 'E', 'I', 'I', 'U', 'L', 'N', 'R', 'S', 'F', 'N', 'A', 
@@ -69,25 +72,59 @@ function App() {
     if (correct === 6) return;
     const word = touchedLetters.join('');
     if (spanoGram === word) {
-      touchedIds.forEach((id) => {
+      const foundIds = [...touchedIds];
+      foundIds.forEach((id) => {
         setSpanoGramAnswerIds((prev) => [...prev, id]);
       });
-      setSpanoGramPath([...touchedIds]);
-      setCorrect((prev) => prev + 1);
-      setMessage(correct === 5 ? 'MERRY CHRISTMAS!' : 'SPANGRAM!!');
+      setSpanoGramPath(foundIds);
+      const newCorrect = correct + 1;
+      setCorrect(newCorrect);
+      setMessage(newCorrect === 6 ? 'MERRY CHRISTMAS!' : 'SPANGRAM!!');
+      setElectrifiedGoldIds(foundIds);
+      setTimeout(() => setElectrifiedGoldIds([]), 1500);
+      if (newCorrect === 6) {
+        setTimeout(() => launchConfetti(), 400);
+      }
     } else if (correctWords.includes(word)) {
-      touchedIds.forEach((id) => {
+      const foundIds = [...touchedIds];
+      foundIds.forEach((id) => {
         setAnserIds((prev) => [...prev, id]);
       });
-      setAnswerPaths((prev) => [...prev, [...touchedIds]]);
-      setCorrect((prev) => prev + 1);
-      setMessage(correct === 5 ? 'MERRY CHRISTMAS!' : 'GOOD JOB!');
+      setAnswerPaths((prev) => [...prev, foundIds]);
+      const newCorrect = correct + 1;
+      setCorrect(newCorrect);
+      setMessage(newCorrect === 6 ? 'MERRY CHRISTMAS!' : 'GOOD JOB!');
+      setElectrifiedIds(foundIds);
+      setTimeout(() => setElectrifiedIds([]), 1500);
+      if (newCorrect === 6) {
+        setTimeout(() => launchConfetti(), 400);
+      }
     } else if (correct < 5) {
       setMessage('TRY AGAIN!');
     }
     setTouchedIds([]);
     setTouchedLetters([]);
     setMouseDown(false);
+  };
+
+  const launchConfetti = () => {
+    const duration = 4000;
+    const end = Date.now() + duration;
+    const interval = setInterval(() => {
+      if (Date.now() > end) {
+        clearInterval(interval);
+        return;
+      }
+      confetti({
+        particleCount: 10,
+        angle: 270,
+        spread: 80,
+        origin: { x: Math.random(), y: 0 },
+        startVelocity: 20,
+        gravity: 1.2,
+        colors: ['#ff6b6b', '#ffd700', '#00f7ff', '#ff69b4', '#adff2f'],
+      });
+    }, 120);
   };
 
   useEffect(() => {
@@ -204,25 +241,30 @@ function App() {
             />
           ))}
         </svg>
-        {letters.map((letter, index) => (
-          <div
-            id={letter}
-            key={index}
-            data-id={index}
-            className="grid-item"
-            style={{
-              backgroundColor: touchedIds.includes(index.toString())
-                ? 'lightgrey'
-                : answerIds.includes(index.toString())
-                ? 'skyblue'
-                : spanoGramAnswerIds.includes(index.toString())
-                ? 'gold'
-                : ''
-            }}
-          >
-            {letter}
-          </div>
-        ))}
+        {letters.map((letter, index) => {
+          const idStr = index.toString();
+          const isElectrified = electrifiedIds.includes(idStr);
+          const isElectrifiedGold = electrifiedGoldIds.includes(idStr);
+          return (
+            <div
+              id={letter}
+              key={index}
+              data-id={index}
+              className={`grid-item${isElectrified ? ' electrified' : ''}${isElectrifiedGold ? ' electrified-gold' : ''}`}
+              style={{
+                backgroundColor: touchedIds.includes(idStr)
+                  ? 'lightgrey'
+                  : answerIds.includes(idStr)
+                  ? 'skyblue'
+                  : spanoGramAnswerIds.includes(idStr)
+                  ? 'gold'
+                  : ''
+              }}
+            >
+              {letter}
+            </div>
+          );
+        })}
       </div>
 
       <p className='progress'> {correct} of 6 words found.</p>

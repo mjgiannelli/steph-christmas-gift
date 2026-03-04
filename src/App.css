@@ -20,6 +20,8 @@
   border-radius: 50%;
   height: 30px;
   width: 30px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
 }
 
 .theme {
@@ -85,4 +87,36 @@
 
 .clue {
   font-weight: bold;
+}
+
+@keyframes electrify {
+  0%   { box-shadow: 0 0 4px 2px #00f7ff, 0 0 10px 4px #00bfff; border-color: #00f7ff; }
+  10%  { box-shadow: 0 0 12px 6px #ffffff, 0 0 20px 10px #00f7ff, 0 0 30px 14px #00bfff; border-color: #ffffff; }
+  20%  { box-shadow: 0 0 3px 1px #00f7ff, 0 0 8px 3px #00bfff; border-color: #00f7ff; }
+  35%  { box-shadow: 0 0 14px 7px #ffffff, 0 0 24px 12px #00f7ff, 0 0 36px 16px #00bfff; border-color: #ffffff; }
+  45%  { box-shadow: 0 0 5px 2px #00f7ff, 0 0 12px 5px #00bfff; border-color: #00f7ff; }
+  60%  { box-shadow: 0 0 10px 5px #ffffff, 0 0 18px 8px #00f7ff, 0 0 28px 12px #00bfff; border-color: #ffffff; }
+  75%  { box-shadow: 0 0 4px 2px #00f7ff, 0 0 10px 4px #00bfff; border-color: #00f7ff; }
+  88%  { box-shadow: 0 0 8px 4px #ffffff, 0 0 14px 6px #00f7ff; border-color: #ffffff; }
+  100% { box-shadow: none; border-color: transparent; }
+}
+
+.electrified {
+  animation: electrify 1.4s ease-out forwards;
+}
+
+@keyframes electrify-gold {
+  0%   { box-shadow: 0 0 4px 2px #ffd700, 0 0 10px 4px #ffaa00; border-color: #ffd700; }
+  10%  { box-shadow: 0 0 12px 6px #ffffff, 0 0 20px 10px #ffd700, 0 0 30px 14px #ffaa00; border-color: #ffffff; }
+  20%  { box-shadow: 0 0 3px 1px #ffd700, 0 0 8px 3px #ffaa00; border-color: #ffd700; }
+  35%  { box-shadow: 0 0 14px 7px #ffffff, 0 0 24px 12px #ffd700, 0 0 36px 16px #ffaa00; border-color: #ffffff; }
+  45%  { box-shadow: 0 0 5px 2px #ffd700, 0 0 12px 5px #ffaa00; border-color: #ffd700; }
+  60%  { box-shadow: 0 0 10px 5px #ffffff, 0 0 18px 8px #ffd700, 0 0 28px 12px #ffaa00; border-color: #ffffff; }
+  75%  { box-shadow: 0 0 4px 2px #ffd700, 0 0 10px 4px #ffaa00; border-color: #ffd700; }
+  88%  { box-shadow: 0 0 8px 4px #ffffff, 0 0 14px 6px #ffd700; border-color: #ffffff; }
+  100% { box-shadow: none; border-color: transparent; }
+}
+
+.electrified-gold {
+  animation: electrify-gold 1.4s ease-out forwards;
 }
