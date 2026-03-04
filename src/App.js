@@ -1,5 +1,35 @@
 import './App.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+
+function getLineSegments(ids, gridEl, color) {
+  if (!gridEl || ids.length < 2) return [];
+  const gridRect = gridEl.getBoundingClientRect();
+  const segments = [];
+  for (let i = 0; i < ids.length - 1; i++) {
+    const el1 = gridEl.querySelector(`[data-id="${ids[i]}"]`);
+    const el2 = gridEl.querySelector(`[data-id="${ids[i + 1]}"]`);
+    if (!el1 || !el2) continue;
+    const r1 = el1.getBoundingClientRect();
+    const r2 = el2.getBoundingClientRect();
+    const cx1 = r1.left + r1.width / 2 - gridRect.left;
+    const cy1 = r1.top + r1.height / 2 - gridRect.top;
+    const cx2 = r2.left + r2.width / 2 - gridRect.left;
+    const cy2 = r2.top + r2.height / 2 - gridRect.top;
+    const dx = cx2 - cx1;
+    const dy = cy2 - cy1;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist === 0) continue;
+    const radius = r1.width / 2;
+    segments.push({
+      x1: cx1 + (dx / dist) * radius,
+      y1: cy1 + (dy / dist) * radius,
+      x2: cx2 - (dx / dist) * radius,
+      y2: cy2 - (dy / dist) * radius,
+      color,
+    });
+  }
+  return segments;
+}
 
 function App() {
   const [touchedIds, setTouchedIds] = useState([]);
@@ -9,6 +39,11 @@ function App() {
   const [message, setMessage] = useState('');
   const [correct, setCorrect] = useState(0);
   const [mouseDown, setMouseDown] = useState(false);
+  const [answerPaths, setAnswerPaths] = useState([]);
+  const [spanoGramPath, setSpanoGramPath] = useState([]);
+  const [lineSegments, setLineSegments] = useState([]);
+  const [layoutVersion, setLayoutVersion] = useState(0);
+  const gridRef = useRef(null);
 
   const letters = ['E', 'N', 'I', 'S', 'U', 'B', 'S', 'S', 'H', 'N', 'G', 'S', 'C', 'T', 'E', 'I', 'I', 'U', 'L', 'N', 'R', 'S', 'F', 'N', 'A', 
     'I', 'P', 'P', 'L', 'N', 'S', 'S', 'O', 'N', 'I', 'E', 'F', 'R', 'T', 'H', 'G', 'M', 'I', 'E', 'N', 'D', 'R', 'A'];
@@ -37,12 +72,14 @@ function App() {
       touchedIds.forEach((id) => {
         setSpanoGramAnswerIds((prev) => [...prev, id]);
       });
+      setSpanoGramPath([...touchedIds]);
       setCorrect((prev) => prev + 1);
       setMessage(correct === 5 ? 'MERRY CHRISTMAS!' : 'SPANGRAM!!');
     } else if (correctWords.includes(word)) {
       touchedIds.forEach((id) => {
         setAnserIds((prev) => [...prev, id]);
       });
+      setAnswerPaths((prev) => [...prev, [...touchedIds]]);
       setCorrect((prev) => prev + 1);
       setMessage(correct === 5 ? 'MERRY CHRISTMAS!' : 'GOOD JOB!');
     } else if (correct < 5) {
@@ -52,6 +89,23 @@ function App() {
     setTouchedLetters([]);
     setMouseDown(false);
   };
+
+  useEffect(() => {
+    const gridEl = gridRef.current;
+    if (!gridEl) return;
+    const ro = new ResizeObserver(() => setLayoutVersion((v) => v + 1));
+    ro.observe(gridEl);
+    return () => ro.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    const gridEl = gridRef.current;
+    const all = [];
+    answerPaths.forEach((path) => all.push(...getLineSegments(path, gridEl, 'skyblue')));
+    if (spanoGramPath.length >= 2) all.push(...getLineSegments(spanoGramPath, gridEl, 'gold'));
+    all.push(...getLineSegments(touchedIds, gridEl, 'skyblue'));
+    setLineSegments(all);
+  }, [touchedIds, answerPaths, spanoGramPath, layoutVersion]);
 
   useEffect(() => {
     const handleTouchStart = (event) => {
@@ -124,7 +178,32 @@ function App() {
 
       <p className='message'>{message}</p>
 
-      <div className="grid-container">
+      <div className="grid-container" ref={gridRef}>
+        <svg
+          className="connection-lines"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            overflow: 'visible',
+          }}
+        >
+          {lineSegments.map((seg, i) => (
+            <line
+              key={i}
+              x1={seg.x1}
+              y1={seg.y1}
+              x2={seg.x2}
+              y2={seg.y2}
+              stroke={seg.color}
+              strokeWidth={8}
+              strokeLinecap="round"
+            />
+          ))}
+        </svg>
         {letters.map((letter, index) => (
           <div
             id={letter}
